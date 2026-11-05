@@ -2386,7 +2386,7 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
       return '<div class="item-options disabled-option" id="options-group-'+id+'" style="display:block;margin-top:5px">'+
         (noodleKeys.length?'<div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px 12px;margin-bottom:6px"><span style="font-size:.8rem;font-weight:700;color:#99402d">麵條（必選）</span>'+noodleKeys.map(noodleLabel).join('')+'</div>':'')+
         '<div style="display:flex;flex-wrap:wrap;gap:5px 11px;align-items:center">'+regular.map(label).join('')+'</div>'+
-        (meals.length?'<div style="display:flex;flex-wrap:wrap;gap:5px 10px;align-items:center;margin-top:6px;padding-top:6px;border-top:1px dashed #ddd9c9"><span style="font-size:.76rem;font-weight:700;color:#99402d">升級套餐</span>'+meals.map(label).join('')+'</div>':'')+'</div>';
+        (meals.length?'<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #ddd9c9"><div style="font-size:.78rem;font-weight:700;color:#99402d;margin-bottom:5px">套餐升級</div><div style="display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center">'+meals.map(label).join('')+'</div></div>':'')+'</div>';
     }
     function validateForestChoiceV39(id,item){
       const keys=forestSelectedOptionsV39(id);
