@@ -1381,6 +1381,41 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
     ]
   },
   {
+    "category": "🎁 超值套餐",
+    "items": [
+      {
+        "name": "超值套餐1｜夏威夷披薩＋可口可樂",
+        "price": 145,
+        "optType": "forest_combo"
+      },
+      {
+        "name": "超值套餐2｜招牌鍋燒麵＋美國脆薯",
+        "price": 135,
+        "optType": "forest_combo_hotpot"
+      },
+      {
+        "name": "超值套餐3｜奶香夏威夷焗烤飯＋可口可樂",
+        "price": 169,
+        "optType": "forest_combo"
+      },
+      {
+        "name": "超值套餐4｜小雞塊＋美國脆薯＋可口可樂",
+        "price": 125,
+        "optType": "forest_combo"
+      },
+      {
+        "name": "超值套餐5｜奶香培根義大利麵＋可口可樂",
+        "price": 160,
+        "optType": "forest_combo_pasta"
+      },
+      {
+        "name": "超值套餐6｜泡菜日式豬排燉飯＋可口可樂",
+        "price": 205,
+        "optType": "forest_combo"
+      }
+    ]
+  },
+  {
     "category": "🍕 披薩",
     "items": [
       {
@@ -1514,41 +1549,6 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
         "name": "ZERO可樂",
         "price": 45,
         "optType": "forest_drink"
-      }
-    ]
-  },
-  {
-    "category": "🎁 超值套餐",
-    "items": [
-      {
-        "name": "超值套餐1｜夏威夷披薩＋可口可樂",
-        "price": 145,
-        "optType": "forest_combo"
-      },
-      {
-        "name": "超值套餐2｜招牌鍋燒麵＋美國脆薯",
-        "price": 135,
-        "optType": "forest_combo_hotpot"
-      },
-      {
-        "name": "超值套餐3｜奶香夏威夷焗烤飯＋可口可樂",
-        "price": 169,
-        "optType": "forest_combo"
-      },
-      {
-        "name": "超值套餐4｜小雞塊＋美國脆薯＋可口可樂",
-        "price": 125,
-        "optType": "forest_combo"
-      },
-      {
-        "name": "超值套餐5｜奶香培根義大利麵＋可口可樂",
-        "price": 160,
-        "optType": "forest_combo_pasta"
-      },
-      {
-        "name": "超值套餐6｜泡菜日式豬排燉飯＋可口可樂",
-        "price": 205,
-        "optType": "forest_combo"
       }
     ]
   }
@@ -2347,6 +2347,9 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
         }
         if(t!=='forest_pizza')keys.push('fs-meal-A','fs-meal-B','fs-meal-C');
       }
+      // 固定超值套餐 3、5 也能免費變更奶香為番茄；其他套餐不提供換口味。
+      if(t==='forest_combo_pasta' && item.name.startsWith('超值套餐5｜'))keys.push('fs-sauce-tomato');
+      if(t==='forest_combo' && item.name.startsWith('超值套餐3｜'))keys.push('fs-sauce-tomato');
       if(t==='forest_soup')keys.push('fs-soup-egg');
       if(t==='forest_drink')keys.push('fs-drink-plum');
       return keys;
@@ -2383,7 +2386,7 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
       return '<div class="item-options disabled-option" id="options-group-'+id+'" style="display:block;margin-top:5px">'+
         (noodleKeys.length?'<div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px 12px;margin-bottom:6px"><span style="font-size:.8rem;font-weight:700;color:#99402d">麵條（必選）</span>'+noodleKeys.map(noodleLabel).join('')+'</div>':'')+
         '<div style="display:flex;flex-wrap:wrap;gap:5px 11px;align-items:center">'+regular.map(label).join('')+'</div>'+
-        (meals.length?'<div style="display:flex;flex-wrap:wrap;gap:5px 10px;align-items:center;margin-top:6px;padding-top:6px;border-top:1px dashed #ddd9c9">'+meals.map(label).join('')+'</div>':'')+'</div>';
+        (meals.length?'<div style="display:flex;flex-wrap:wrap;gap:5px 10px;align-items:center;margin-top:6px;padding-top:6px;border-top:1px dashed #ddd9c9"><span style="font-size:.76rem;font-weight:700;color:#99402d">升級套餐</span>'+meals.map(label).join('')+'</div>':'')+'</div>';
     }
     function validateForestChoiceV39(id,item){
       const keys=forestSelectedOptionsV39(id);
@@ -2431,7 +2434,8 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
 
           if (item.optType?.startsWith('forest_')) {
             optionsHtml = forestOptionsHtmlV39(item, id);
-            placeholderText = '其他備註';
+            placeholderText = forestOptionKeysV39(item).some(k=>k==='fs-sauce-tomato'||k==='fs-sauce-milk')
+              ? '備註（未選換口味則依品名原口味製作）' : '其他備註';
           } else if (['tt_egg_choice','tt_tofu_choice','tt_fish_choice'].includes(item.optType)) {
             const choices = {tt_egg_choice:['九層塔','菜脯'],tt_tofu_choice:['紅燒','麻婆'],tt_fish_choice:['糖醋','紅燒']}[item.optType];
             optionsHtml = `<div class="item-options disabled-option" id="options-group-${id}"><div style="font-weight:bold;color:#b91c1c">料理口味（二選一，必選）</div>${choices.map(choice => `<label><input type="radio" name="tt-choice-${id}" value="${choice}" onchange="updateRemark('${id}', '${item.optType}');clearRequiredOptionAttention('${id}')"> ${choice}</label>`).join('')}</div>`;
