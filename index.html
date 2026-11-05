@@ -2330,16 +2330,21 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
       if(pasta) keys.push('fs-pasta-straight','fs-pasta-spiral');
       if(hotpot) keys.push('fs-hotpot-意麵','fs-hotpot-冬粉','fs-hotpot-烏龍麵','fs-hotpot-刀削麵');
       if(main){
-        if(!item.forestNoSwap && item.name.includes('奶香')) keys.push('fs-sauce-tomato');
-        else if(!item.forestNoSwap && item.name.includes('番茄')) keys.push('fs-sauce-milk');
-        if((item.forestFlags||'').includes('g')) keys.push('fs-sauce-green');
-        if((item.forestFlags||'').includes('t')) keys.push('fs-truffle');
-        if((item.forestFlags||'').includes('k')) keys.push('fs-kimchi');
-        if(t==='forest_pasta'){keys.push('fs-egg','fs-bake');}
-        if(t==='forest_risotto') keys.push('fs-egg');
-        if(t==='forest_gratin') keys.push('fs-egg','fs-cheese');
-        if(t==='forest_pizza') keys.push('fs-pizza-cheese');
-        if(t==='forest_hotpot') keys.push('fs-hotpot-sacha','fs-hotpot-kimchi','fs-hotpot-spicy');
+        if(item.forestNoSwap){
+          // 全新推出：只有兩道義大利麵提供加焗烤，其他四道不提供單點加料。
+          if(t==='forest_pasta')keys.push('fs-bake');
+        }else{
+          if(item.name.includes('奶香')) keys.push('fs-sauce-tomato');
+          else if(item.name.includes('番茄')) keys.push('fs-sauce-milk');
+          if((item.forestFlags||'').includes('g')) keys.push('fs-sauce-green');
+          if((item.forestFlags||'').includes('t')) keys.push('fs-truffle');
+          if((item.forestFlags||'').includes('k')) keys.push('fs-kimchi');
+          if(t==='forest_pasta')keys.push('fs-egg','fs-bake');
+          if(t==='forest_risotto')keys.push('fs-egg');
+          if(t==='forest_gratin')keys.push('fs-egg','fs-cheese');
+          if(t==='forest_pizza')keys.push('fs-pizza-cheese');
+          if(t==='forest_hotpot')keys.push('fs-hotpot-sacha','fs-hotpot-kimchi','fs-hotpot-spicy');
+        }
         if(t!=='forest_pizza')keys.push('fs-meal-A','fs-meal-B','fs-meal-C');
       }
       if(t==='forest_soup')keys.push('fs-soup-egg');
@@ -2348,7 +2353,7 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
     }
     function forestSelectedOptionsV39(id){
       const group=document.getElementById('options-group-'+id);
-      return group?Array.from(group.querySelectorAll('input[type="checkbox"]:checked')).map(cb=>cb.id.slice(0,-(id.length+1))):[];
+      return group?Array.from(group.querySelectorAll('input:checked')).map(cb=>cb.id.slice(0,-(id.length+1))):[];
     }
     function forestExtraPriceV39(id){return forestSelectedOptionsV39(id).reduce((n,k)=>n+(forestOptionLabelsV39[k]?.[1]||0),0);}
     function forestChooseV39(id,key){
@@ -2370,10 +2375,13 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
       if(!keys.length)return '';
       const pasta=keys.some(k=>k.startsWith('fs-pasta-'));
       const hotpot=keys.some(k=>['fs-hotpot-意麵','fs-hotpot-冬粉','fs-hotpot-烏龍麵','fs-hotpot-刀削麵'].includes(k));
-      const regular=keys.filter(k=>!k.startsWith('fs-meal-'));
+      const noodleKeys=keys.filter(k=>k.startsWith('fs-pasta-')||['fs-hotpot-意麵','fs-hotpot-冬粉','fs-hotpot-烏龍麵','fs-hotpot-刀削麵'].includes(k));
+      const regular=keys.filter(k=>!k.startsWith('fs-meal-')&&!noodleKeys.includes(k));
       const meals=keys.filter(k=>k.startsWith('fs-meal-'));
       const label=k=>'<label style="font-size:.73rem;font-weight:500;gap:3px;white-space:nowrap"><input type="checkbox" id="'+k+'-'+id+'" onchange="forestChooseV39('+JSON.stringify(id).replace(/"/g,'&quot;')+','+JSON.stringify(k).replace(/"/g,'&quot;')+')"> '+(k==='fs-sauce-tomato'?'換番茄口味（免費）':k==='fs-sauce-milk'?'換奶香口味（免費）':forestOptionLabelsV39[k][0])+(forestOptionLabelsV39[k][1]?' +$'+forestOptionLabelsV39[k][1]:'')+'</label>';
+      const noodleLabel=k=>'<label style="font-size:.78rem;font-weight:600;gap:4px;white-space:nowrap"><input type="radio" name="fs-noodle-'+id+'" id="'+k+'-'+id+'" onchange="forestChooseV39('+JSON.stringify(id).replace(/"/g,'&quot;')+','+JSON.stringify(k).replace(/"/g,'&quot;')+')"> '+forestOptionLabelsV39[k][0]+'</label>';
       return '<div class="item-options disabled-option" id="options-group-'+id+'" style="display:block;margin-top:5px">'+
+        (noodleKeys.length?'<div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px 12px;margin-bottom:6px"><span style="font-size:.8rem;font-weight:700;color:#99402d">麵條（必選）</span>'+noodleKeys.map(noodleLabel).join('')+'</div>':'')+
         '<div style="display:flex;flex-wrap:wrap;gap:5px 11px;align-items:center">'+regular.map(label).join('')+'</div>'+
         (meals.length?'<div style="display:flex;flex-wrap:wrap;gap:5px 10px;align-items:center;margin-top:6px;padding-top:6px;border-top:1px dashed #ddd9c9">'+meals.map(label).join('')+'</div>':'')+'</div>';
     }
@@ -3116,7 +3124,7 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
         for (let k in currentOrder) {
           // V9：加購選項獨立傳送，後端不從自由備註猜測價格。
           const group = document.getElementById(`options-group-${k}`);
-          const options = group ? Array.from(group.querySelectorAll('input[type="checkbox"]:checked'))
+          const options = group ? Array.from(group.querySelectorAll(currentOrder[k].optType?.startsWith('forest_') ? 'input:checked' : 'input[type="checkbox"]:checked'))
             .map(cb => cb.id.slice(0, -(k.length + 1))) : [];
           if (currentOrder[k].optType === 'eight_pot') {
             const side = [...document.getElementsByName(`eight-side-${k}`)].find(r => r.checked);
