@@ -2861,16 +2861,15 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
 
           } else if (item.optType === 'nanbu_bento' || item.optType === 'nanbu_veg') {
             const pairs = [['魯肉',35],['港式臘腸',35],['豬腳',35],['大排',55],['腿庫',55],['雞腿',55],['焢肉',55]];
-            const riceOptions = `<div style="font-weight:600;margin-bottom:5px;">飯量（可不選）</div>
+            const riceOptions = `<div style="display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;">
               <label><input type="checkbox" id="nb-half-${id}" onchange="toggleNanbuRiceV405('${id}', 'half')"> 半飯</label>
-              <label><input type="checkbox" id="nb-none-${id}" onchange="toggleNanbuRiceV405('${id}', 'none')"> 不飯</label>`;
-            const pairOptions = item.optType === 'nanbu_bento' ? `<div style="font-weight:600;margin-bottom:5px;">雙拼加選（可不選）</div>
-              ${pairs.map(([name,price]) => `<label><input type="checkbox" id="nb-pair-${name}-${id}" onchange="toggleNanbuPairV405('${id}', '${name}')"> 加${name} +$${price}</label>`).join('')}` : '';
-            optionsHtml = `<div class="item-options disabled-option" id="options-group-${id}">
-              <div style="display:grid;grid-template-columns:${item.optType === 'nanbu_bento' ? 'minmax(0,1fr) minmax(0,1.7fr)' : '1fr'};gap:8px;align-items:start;">
-                <div style="display:flex;flex-direction:column;gap:6px;">${riceOptions}</div>
-                ${pairOptions ? `<div style="display:flex;flex-direction:column;gap:6px;min-width:0;">${pairOptions}</div>` : ''}
-              </div></div>`;
+              <label><input type="checkbox" id="nb-none-${id}" onchange="toggleNanbuRiceV405('${id}', 'none')"> 不飯</label>
+              </div>`;
+            const pairOptions = item.optType === 'nanbu_bento' ? `<div style="display:flex;align-items:center;gap:8px 15px;flex-wrap:wrap;border-top:1px dashed rgba(112,127,92,.22);padding-top:9px;">
+              ${pairs.map(([name,price]) => `<label><input type="checkbox" id="nb-pair-${name}-${id}" onchange="toggleNanbuPairV405('${id}', '${name}')"> 加${name} +$${price}</label>`).join('')}
+              </div>` : '';
+            optionsHtml = `<div class="item-options disabled-option" id="options-group-${id}" style="display:flex;flex-direction:column;gap:9px;">
+              ${riceOptions}${pairOptions}</div>`;
           } else if (item.optType === 'nanbu_rice_egg') {
             optionsHtml = `<div class="item-options disabled-option" id="options-group-${id}">
               <label><input type="checkbox" id="nb-egg-${id}" onchange="updateRemark('${id}', 'nanbu_rice_egg')"> 加滷蛋 +$15</label>
