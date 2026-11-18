@@ -2867,7 +2867,7 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
             const toppings = ['珍珠','椰果','布丁','仙草','黑磚'];
             const row = (choices,prefix,title) => `<div style="display:flex;flex-wrap:wrap;gap:7px 13px;align-items:center;">
               <strong style="font-size:.85rem;">${title}</strong>
-              ${choices.map(x=>`<label><input type="radio" name="${prefix}-${id}" id="${prefix}-${x}-${id}" onchange="updateRemark('${id}','sugoi_drink')"> ${x}</label>`).join('')}
+              ${choices.map(x=>`<label><input type="radio" name="${prefix}-${id}" id="${prefix}-${x}-${id}" onchange="updateRemark('${id}','sugoi_drink');clearRequiredOptionAttention('${id}')"> ${x}</label>`).join('')}
               </div>`;
             optionsHtml = `<div class="item-options disabled-option" id="options-group-${id}" style="display:flex;flex-direction:column;gap:8px;">
               ${item.sugoiFixedSugar ? '<div>甜度固定</div>' : row(sugarChoices,'sg-sugar','甜度')}
@@ -3057,6 +3057,26 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
           const prefixes = {rice_bowl:['rb-rice','rb-bowl'],chungwu:['meat-chicken','meat-pork','meat-beef'],light_box:['meat-chicken','meat-pork','meat-beef'],tteokbokki_noodle:['tteok-orig','tteok-spicy'],shin_ramen:['shin-kimchi','shin-milk','shin-cheese'],gdf_flavor:['gdf-orig','gdf-spicy']}[item.optType];
           if (!prefixes.some(prefix => document.getElementById(`${prefix}-${id}`)?.checked))
             return requiredChoiceMissing(id, '請先選擇必選口味！');
+        }
+      }
+      return true;
+    }
+
+    // V41_4：漏選甜度或冰量時，帶回對應的飲料卡片並標記待補項目。
+    // 固定甜度／固定冰量的飲料不要求額外選擇。
+    function validateSugoiRequiredOptionsV414() {
+      const sug = allStoresData['SUGOI-焗之森飲料店'];
+      if (!sug) return true;
+      const drinks = sug.flatMap(group => group.items);
+      for (const [id, orderItem] of Object.entries(currentOrder)) {
+        if (orderItem.qty <= 0 || orderItem.optType !== 'sugoi_drink') continue;
+        const drink = drinks.find(item => item.name === id);
+        if (!drink) continue;
+        if (!drink.sugoiFixedSugar && ![...document.getElementsByName(`sg-sugar-${id}`)].some(el => el.checked)) {
+          return requiredChoiceMissing(id, '尚未選擇甜度，請先選擇甜度！');
+        }
+        if (!drink.sugoiFixedIce && ![...document.getElementsByName(`sg-ice-${id}`)].some(el => el.checked)) {
+          return requiredChoiceMissing(id, '尚未選擇冰量，請先選擇冰量！');
         }
       }
       return true;
@@ -3496,19 +3516,7 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
           return; 
         }
 
-        if (currentEventKey?.endsWith('_SUGOI-焗之森飲料店')) {
-          for (const [name, item] of Object.entries(currentOrder)) {
-            if (item.qty <= 0) continue;
-            const source = allStoresData['SUGOI-焗之森飲料店'].flatMap(g=>g.items).find(x=>x.name===name);
-            if (!source) continue;
-            if (!source.sugoiFixedSugar && ![...document.getElementsByName(`sg-sugar-${name}`)].some(x=>x.checked)) {
-              alert('請為「'+name+'」選擇甜度'); return;
-            }
-            if (!source.sugoiFixedIce && ![...document.getElementsByName(`sg-ice-${name}`)].some(x=>x.checked)) {
-              alert('請為「'+name+'」選擇冰量'); return;
-            }
-          }
-        }
+        if (!validateSugoiRequiredOptionsV414()) return;
         if (!validateHualienSpice()) return;
         if (!validateBafangRequiredOptions()) return;
 
@@ -3573,6 +3581,7 @@ html body .hdept-control .dept-word strong{color:#425e38!important;font-size:14p
 
     async function submitOrder() {
       if (orderSubmitInFlight || orderSubmitConfirmed) return;
+      if (!validateSugoiRequiredOptionsV414()) return;
       if (!validateHualienSpice()) return;
       if (!validateBafangRequiredOptions()) return;
       orderSubmitInFlight = true;
